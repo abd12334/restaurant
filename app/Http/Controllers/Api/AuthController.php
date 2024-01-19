@@ -33,10 +33,11 @@ class AuthController
              return $this->errorResponse($validator->errors(), 422);
          }
          try {
-             $roles = Role::whereIn('id', $request['roles_id'])->get();
-             if($roles->count()==0) {
-                 return $this->errorResponse('No roles with such ids', 500);
-             }
+            $roles = collect($request['roles_id']);
+            
+            if ($roles->count() == 0) {
+                return $this->errorResponse('No roles with such ids', 500);
+            }
              $input = $request->all();
              $input['password'] = bcrypt($input['password']);
              $user = User::create($input);
