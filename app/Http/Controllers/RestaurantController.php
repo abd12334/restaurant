@@ -4,45 +4,65 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\restaurant;
+use App\Models\menu;
 use App\Http\Traits\GeneralTrait;
+use Illuminate\Support\Facades\Cache;
+use App\Http\Resources\RestaurantResource;
+use App\Http\Resources\RestaurantMenuResource;
+use App\Http\Resources\MenuResource;
 class RestaurantController extends Controller
 {
+    
     use GeneralTrait;
     public function index()
 {
     $restaurants = Restaurant::all();
+    Cache::put('res', $restaurants, 60);
 
-    return RestaurantResource::collection($restaurants)->toArray($request);
+    
+        if (Cache::has('res')) {
+        $restaurants = Cache::get('res');
+        } else {
+        Cache::put('res', $restaurants, 60);
+        }
+
+    return RestaurantResource::collection($restaurants);
 }
 
     public function show($id)
 {
-    $restaurant = Restaurant::findOrFail($id);
+    
+    $restaurant = Restaurant::find($id);
+    $restaurant_id = $restaurant['id'];
 
-    $menu = Menu::where('restaurant_id', $restaurant->id)->get();
+    $menu =  Menu::where('restaurant_id' ,'=', $restaurant_id)->get();
 
-    return RestaurantResource::make($restaurant, [
-        'menu' => $menu,
-    ])->toArray($request);
+    #return RestaurantResource::collection($restaurant,$menu);
+    return $this->successResponse($menu , $restaurant);
 }
+
+
 public function search(Request $request)
 {
+    
+
     $cuisine = $request->input('cuisine');
-    $location = $request->input('location');
+    
     $address = $request->input('address');
-    $phone_number = $request->input('phone_number');
+
+    
 
     $restaurants = Restaurant::where('cuisine', '=', $cuisine)
-        ->where('location', '=', $location)
         ->where('address', '=', $address)
-        ->where('phone_number', '=', $phone_number)
         ->get();
-
-    return RestaurantResource::collection($restaurants)->toArray($request);
+       
+    foreach ($restaurants as $restaurant) {
+        $restaurant_id = $restaurant->id;
+        $menus = Menu::where('restaurant_id', $restaurant_id)->get();
+        $restaurant->menu = $menus;
+        }
+        
+    return $this->successResponse($restaurants);
+           
 }
-
-
-
-
-
 }

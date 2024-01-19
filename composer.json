@@ -24,7 +24,9 @@
         "psr-4": {
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
-            "Database\\Seeders\\": "database/seeders/"
+            "Database\\Seeders\\": "database/seeders/",
+            "App\\Http\\Traits\\": "app/Http/Controllers/Traits/"
+            
         }
     },
     "autoload-dev": {
@@ -63,4 +65,6 @@
     },
     "minimum-stability": "stable",
     "prefer-stable": true
+
+    
 }
